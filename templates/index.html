@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwaBhaSha Translator</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 0;
+            margin: 0;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        label {
+            font-size: 18px;
+            color: #34495e;
+            margin-left: 20px;
+        }
+
+        #text_input {
+            width: 90%;
+            height: 200px;
+            margin: 20px auto;
+            display: block;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            resize: none;
+            background-color: #ecf0f1;
+        }
+
+        #text_input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0px 0px 10px rgba(52, 152, 219, 0.5);
+        }
+
+        #suggestions {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            width: 90%;
+            margin: 0 auto;
+            left: 5%;
+            display: none;
+            border-radius: 8px;
+        }
+
+        #suggestions div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        #suggestions div:hover {
+            background-color: #f0f0f0;
+        }
+
+        #suggestions div:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #text_input {
+                width: 95%;
+                font-size: 14px;
+            }
+
+            #suggestions {
+                width: 95%;
+                left: 2.5%;
+            }
+        }
+
+        /* Smooth transitions for dropdown */
+        #suggestions div {
+            transition: background-color 0.3s;
+        }
+
+         #instructions {
+            width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            color: #2c3e50;
+            
+        }
+
+        #translated_output {
+            margin-top: 20px;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            width: 90%;
+            margin: 0 auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: 40px;">Swa-Bhasha Transliterator</h1>
+    <h2 style="font-size: 30px;">Romanized Sinhala to Sinhala Reverse Transliterator</h2>
+
+    <textarea id="text_input" rows="10" cols="50" placeholder="Type here..." style="font-size: 25px;"></textarea>
+
+    <div id="suggestions"></div>
+
+ <!-- Instruction Set -->
+    <div id="instructions" style="font-size: 20px;">
+        <h3>How to Use the Transliterator</h3>
+        <ol>
+            <li><strong>Enter Text:</strong> Begin typing Romanized Sinhala text into the input box. The system will transliterate it into Sinhala as you type.</li>
+            <li><strong>Suggestions for Words:</strong> Click on any word to see alternative Sinhala suggestions in a dropdown menu.</li>
+            <li><strong>Spacebar Action:</strong> After typing a word, press the spacebar to transliterate it. The text box will update with the Sinhala text.</li>
+            <li><strong>Replacing Words:</strong> Select a suggestion from the dropdown to replace the word in the text area.</li>
+            
+        </ol>
+    </div>
+
+    <div id="instructions" style="font-size: 20px;">
+        <h3>For more information Visit :</h3>
+        <ol>
+            <li><a href="https://ieeexplore.ieee.org/document/10145648">https://ieeexplore.ieee.org/document/10145648</a></li>
+            <li><a href="https://ieeexplore.ieee.org/document/10499771">https://ieeexplore.ieee.org/document/10499771</a></li>
+            <li><a href="https://www.kaggle.com/datasets/tgdeshank/swa-bhasha-dataset">https://www.kaggle.com/datasets/tgdeshank/swa-bhasha-dataset</a></li>
+            <li><a href="https://huggingface.co/deshanksuman/SwaBhasha_Romanized_Sinhala2Sinhala">https://huggingface.co/deshanksuman/SwaBhasha_Romanized_Sinhala2Sinhala</a></li>
+            <li><a href="https://huggingface.co/deshanksuman/Sinhala_Word_Suggestor_for_Singlish">https://huggingface.co/deshanksuman/Sinhala_Word_Suggestor_for_Singlish</a></li>
+        </ol>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle space key press to update the translation in real-time
+            $('#text_input').on('keyup', function(event) {
+                if (event.key === ' ') {
+                    var input_text = $('#text_input').val();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/on_space',
+                        data: { text: input_text },
+                        success: function(response) {
+                            $('#text_input').val(response.translated_text);
+                            
+                        }
+                    });
+                }
+            });
+
+            // Handle clicking on words in the text area to provide suggestions
+            $('#text_input').on('click', function(event) {
+                var text = $('#text_input').val();
+                var words = text.split(' ');
+                var clicked_word = words[words.length - 2].trim(); // Get the last word before space
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_suggestions',
+                    data: { clicked_word: clicked_word },
+                    success: function(response) {
+                        // Show suggestions dropdown near the textarea
+                        var suggestions = response.suggestions;
+                        var suggestionsHtml = '';
+                        suggestions.forEach(function(suggestion) {
+                            suggestionsHtml += '<div>' + suggestion + '</div>';
+                        });
+                        $('#suggestions').html(suggestionsHtml).show();
+                    }
+                });
+            });
+
+            // Handle suggestion click
+            $(document).on('click', '#suggestions div', function() {
+                var suggestion = $(this).text();
+                $.ajax({
+                    type: 'POST',
+                    url: '/replace_word',
+                    data: { suggestion: suggestion },
+                    success: function(response) {
+                        $('#text_input').val(response.translated_text);
+                        $('#translated_output').text(response.translated_text).show();
+                    }
+                });
+                $('#suggestions').hide(); // Hide suggestions after selection
+            });
+
+            // Hide suggestions if clicking outside
+            $(document).click(function(event) {
+                if (!$(event.target).closest('#suggestions').length && !$(event.target).is('#text_input')) {
+                    $('#suggestions').hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
