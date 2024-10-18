@@ -1,4 +1,4 @@
-# Romanized Sinhala to Sinhala Transliteration
+# SwaBhasha : Romanized Sinhala to Sinhala Transliteration
 
 This repository provides a Romanized Sinhala to Sinhala transliteration tool, enabling users to convert Romanized Sinhala text into Sinhala script in real-time. The tool is designed for ease of use with features like word suggestions, easy modifications, and spacebar-triggered transliteration.
 
