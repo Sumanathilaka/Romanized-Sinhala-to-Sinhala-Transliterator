@@ -31,6 +31,7 @@ cd repo-name
 ## 2. Download the Datasets and Pickle File
 
 Download the required datasets and the pickle file from the provided Google Drive folder. Once downloaded, place these files in the appropriate directories within the repository.
+https://drive.google.com/drive/folders/1yyTuy7HAJNoy1uC8kk5vrlYG6DGPHETl?usp=sharing
 
 ### 3. Install Flask
 Ensure you have Python installed on your system, then install Flask and other required dependencies using the following command:
